@@ -35,16 +35,23 @@ jobs:
           echo "Building image: $IMAGE_TAG"
           docker build -t $IMAGE_TAG ./app
           docker push $IMAGE_TAG
+
       - name: Log in to AWS
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: us-east-1
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      
       - name: Deploy to ECS
-        run: |          
+        run: |
+          TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition decenter-app-cluster-decenter-web-service)
+          NEW_TASK_DEF=$(echo $TASK_DEFINITION | jq --arg IMAGE "$IMAGE_TAG" '.taskDefinition | .containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)')
+          NEW_TASK_INFO=$(aws ecs register-task-definition --cli-input-json "$NEW_TASK_DEF")
+          NEW_REVISION=$(echo $NEW_TASK_INFO | jq -r '.taskDefinition.revision')
+          
           aws ecs update-service \
             --cluster decenter-app-cluster \
             --service decenter-web-service \
-            --task-definition decenter-app-cluster-decenter-web-service:$(git rev-parse --short "$GITHUB_SHA") \
+            --task-definition decenter-app-cluster-decenter-web-service:$NEW_REVISION \
             --force-new-deployment
