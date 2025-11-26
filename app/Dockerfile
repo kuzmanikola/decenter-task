@@ -26,7 +26,7 @@ ENV PATH=/home/appuser/.local/bin:$PATH
 EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget --spider --tries=1 http://localhost:3000/health 2>&1 || exit 1
+    CMD wget --quiet --tries=1 -O /dev/null http://localhost:3000/health || exit 1
 
 CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "3000", "--log-level", "info", "--access-log"]
 
