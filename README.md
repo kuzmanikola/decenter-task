@@ -162,7 +162,7 @@ terraform output cluster_arn
 
 - Odvojeni su svi ECS resursi unutar `ecs_module` sub-direktorijuma.
 
-- Module moze biti korišten za više servisa sa različitim konfiguracijama.
+- Module moze biti korišćen za više servisa sa različitim konfiguracijama.
 - Promene za ECS su centralizovane na jednom mestu
 - Jednostavno možemo dodati novi servis pozivanjem modula više puta.
 
